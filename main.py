@@ -1,12 +1,4 @@
-"""Entry point: start the Pain Point MCP server.
-
-Locally (no PORT env var), runs over stdio -- the transport an MCP client
-like Claude Desktop/Code launches directly as a subprocess.
-
-When hosted (Render sets PORT automatically), runs over Streamable HTTP
-instead, guarded by a shared-secret header so random internet traffic can't
-spend your API quota/credits.
-"""
+"""Entry point: start the Pain Point MCP server."""
 
 from env import PORT
 from mcp.server.fastmcp import FastMCP
@@ -30,7 +22,9 @@ def build_http_app():
 
         class AuthMiddleware(BaseHTTPMiddleware):
             async def dispatch(self, request, call_next):
-                if request.headers.get("X-MCP-Auth") != MCP_SERVER_SECRET:
+                auth_header = request.headers.get("Authorization", "")
+                bearer_token = auth_header.removeprefix("Bearer ").strip()
+                if request.headers.get("X-MCP-Auth") != MCP_SERVER_SECRET and bearer_token != MCP_SERVER_SECRET:
                     return JSONResponse({"error": "unauthorized"}, status_code=401)
                 return await call_next(request)
 
