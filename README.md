@@ -77,6 +77,33 @@ reading/understanding happens in the AI client you connect it to.
   email for ~$1 of free trial credit (~6,000 calls), then top up cents at a
   time (~$0.15–0.20 per 1,000 tweets) if you need more.
 
+## Hosting (Render, free)
+
+The server runs over **stdio** locally (the default `python main.py`), but
+switches to **Streamable HTTP** automatically when a `PORT` env var is
+present — which Render sets for you. This lets an AI client talk to it over
+a URL instead of launching it as a local subprocess.
+
+1. Push this repo to GitHub.
+2. On [render.com](https://render.com) (no card required): **New → Blueprint**,
+   point it at the repo — it'll pick up `render.yaml` automatically. Or set
+   it up manually as a **Web Service**: build command `pip install -r
+   requirements.txt`, start command `python main.py`.
+3. Set env vars on the Render service: all the API keys from `.env`, plus
+   `MCP_SERVER_SECRET` — generate any long random string, e.g.:
+   ```
+   python -c "import secrets; print(secrets.token_urlsafe(32))"
+   ```
+4. Deploy. Render gives you a URL like `https://pain-point-mcp.onrender.com`.
+   The MCP endpoint is `https://pain-point-mcp.onrender.com/mcp`.
+5. Point your MCP client at that URL using the Streamable HTTP transport,
+   sending header `X-MCP-Auth: <your MCP_SERVER_SECRET>` on every request.
+   Without a matching header, the server returns `401`.
+
+**Free tier tradeoff:** the service spins down after 15 minutes idle, so the
+first request after a gap takes 30–60s to wake up. Fine for an AI agent
+calling this occasionally; not for anything latency-sensitive.
+
 ## Notes / limitations
 
 - Reddit's public `.json` fallback and TwitterAPI.io are third-party paths

@@ -13,3 +13,6 @@ REDDIT_USER_AGENT = os.environ.get("REDDIT_USER_AGENT", "pain-point-mcp/0.1 (by 
 YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY")
 
 TWITTERAPI_IO_KEY = os.environ.get("TWITTERAPI_IO_KEY")
+
+MCP_SERVER_SECRET = os.environ.get("MCP_SERVER_SECRET")
+PORT = os.environ.get("PORT")
