@@ -1,34 +1,62 @@
-"""Entry point: start the Pain Point MCP server."""
-
-from env import PORT
+from env import BASE_URL, MCP_SERVER_SECRET, PORT
 from mcp.server.fastmcp import FastMCP
 
 from tools import register_tools
 
-mcp = FastMCP("pain-point-mcp", host="0.0.0.0", port=int(PORT) if PORT else 8000)
+if BASE_URL and MCP_SERVER_SECRET:
+    from mcp.server.auth.settings import AuthSettings, ClientRegistrationOptions, RevocationOptions
+
+    from oauth_provider import SingleUserOAuthProvider
+
+    from login import register_login_route
+
+    oauth_provider = SingleUserOAuthProvider()
+    mcp = FastMCP(
+        "pain-point-mcp",
+        host="0.0.0.0",
+        port=int(PORT) if PORT else 8000,
+        auth_server_provider=oauth_provider,
+        auth=AuthSettings(
+            issuer_url=BASE_URL,
+            resource_server_url=BASE_URL,
+            client_registration_options=ClientRegistrationOptions(enabled=True),
+            revocation_options=RevocationOptions(enabled=True),
+            validate_token_resource=False,
+        ),
+    )
+    register_login_route(mcp, oauth_provider)
+
+else:
+    mcp = FastMCP("pain-point-mcp", host="0.0.0.0", port=int(PORT) if PORT else 8000)
+
 register_tools(mcp)
 
 
 def build_http_app():
-    """Streamable HTTP app wrapped with shared-secret auth, for hosting."""
-    from starlette.middleware.base import BaseHTTPMiddleware
-    from starlette.responses import JSONResponse
-
-    from env import MCP_SERVER_SECRET
-
     app = mcp.streamable_http_app()
 
     if MCP_SERVER_SECRET:
+        from starlette.datastructures import MutableHeaders
 
-        class AuthMiddleware(BaseHTTPMiddleware):
-            async def dispatch(self, request, call_next):
-                auth_header = request.headers.get("Authorization", "")
-                bearer_token = auth_header.removeprefix("Bearer ").strip()
-                if request.headers.get("X-MCP-Auth") != MCP_SERVER_SECRET and bearer_token != MCP_SERVER_SECRET:
-                    return JSONResponse({"error": "unauthorized"}, status_code=401)
-                return await call_next(request)
+        class StaticSecretMiddleware:
+            def __init__(self, app):
+                self.app = app
 
-        app.add_middleware(AuthMiddleware)
+            async def __call__(self, scope, receive, send):
+                if scope["type"] == "http":
+                    headers = MutableHeaders(scope=scope)
+                    if "authorization" not in headers:
+                        token = headers.get("x-mcp-auth")
+                        if not token:
+                            query_string = scope.get("query_string", b"").decode()
+                            from urllib.parse import parse_qs
+
+                            token = (parse_qs(query_string).get("key") or [None])[0]
+                        if token:
+                            headers["authorization"] = f"Bearer {token}"
+                await self.app(scope, receive, send)
+
+        app.add_middleware(StaticSecretMiddleware)
 
     return app
 

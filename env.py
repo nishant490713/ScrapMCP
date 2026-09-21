@@ -16,3 +16,4 @@ TWITTERAPI_IO_KEY = os.environ.get("TWITTERAPI_IO_KEY")
 
 MCP_SERVER_SECRET = os.environ.get("MCP_SERVER_SECRET")
 PORT = os.environ.get("PORT")
+BASE_URL = os.environ.get("BASE_URL") or os.environ.get("RENDER_EXTERNAL_URL")
