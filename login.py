@@ -22,7 +22,7 @@ def register_login_route(mcp, oauth_provider):
             return HTMLResponse(LOGIN_FORM.format(request_id=request_id, error=""))
 
         form = await request.form()
-        if form.get("secret") != MCP_SERVER_SECRET:
+        if str(form.get("secret", "")).strip() != MCP_SERVER_SECRET:
             return HTMLResponse(LOGIN_FORM.format(request_id=request_id, error="Wrong secret"), status_code=401)
 
         redirect_uri = oauth_provider.complete_login(str(form.get("request_id", "")))
