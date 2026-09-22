@@ -26,6 +26,15 @@ if BASE_URL and MCP_SERVER_SECRET:
     )
     register_login_route(mcp, oauth_provider)
 
+    @mcp.custom_route("/debug-secret", methods=["GET"])
+    async def debug_secret(request):
+        import hashlib
+
+        from starlette.responses import JSONResponse
+
+        digest = hashlib.sha256(MCP_SERVER_SECRET.encode()).hexdigest()[:12]
+        return JSONResponse({"length": len(MCP_SERVER_SECRET), "hash_prefix": digest})
+
 else:
     mcp = FastMCP("pain-point-mcp", host="0.0.0.0", port=int(PORT) if PORT else 8000)
 
