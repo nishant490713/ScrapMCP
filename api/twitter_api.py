@@ -1,13 +1,3 @@
-"""Controller for Twitter/X data: raw tweets + replies, no analysis.
-
-Primary source is the third-party TwitterAPI.io service (https://twitterapi.io),
-since X's official API has no free read access. Requires TWITTERAPI_IO_KEY.
-
-If that fails (unset key, rate limit, outage) and APIFY_TOKEN is set, falls back
-to the apidojo/tweet-scraper actor on Apify (https://apify.com), which offers
-$5/month in free platform credits.
-"""
-
 from typing import Any
 
 import httpx

@@ -1,9 +1,3 @@
-"""Controller for YouTube data: raw video results + top-level comments, no analysis.
-
-Uses the free YouTube Data API v3 (10,000 quota units/day per project).
-Requires YOUTUBE_API_KEY.
-"""
-
 import asyncio
 from typing import Any
 

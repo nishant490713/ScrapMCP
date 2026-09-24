@@ -10,13 +10,11 @@ services:
         value: 3.11.9
       - key: MCP_SERVER_SECRET
         sync: false
-      - key: REDDIT_CLIENT_ID
-        sync: false
-      - key: REDDIT_CLIENT_SECRET
-        sync: false
-      - key: REDDIT_USER_AGENT
+      - key: REDDIT_API_KEY
         sync: false
       - key: YOUTUBE_API_KEY
         sync: false
       - key: TWITTERAPI_IO_KEY
+        sync: false
+      - key: APIFY_TOKEN
         sync: false

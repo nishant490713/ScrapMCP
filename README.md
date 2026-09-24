@@ -62,15 +62,13 @@ reading/understanding happens in the AI client you connect it to.
 
 ## Getting API keys (all free to start)
 
-- **Reddit** — free for non-commercial use, 100 requests/min once approved.
-  Create an app at https://www.reddit.com/prefs/apps. Reddit currently
-  requires manual approval for new OAuth apps, so this can take a while.
-  **`REDDIT_CLIENT_ID`/`REDDIT_CLIENT_SECRET` are effectively required**: the
-  code falls back to Reddit's public `.json` endpoints when they're unset,
-  but as of testing (Sep 2026) Reddit now blocks that fallback outright
-  (403, anti-bot challenge page) — this matches Reddit's ongoing crackdown
-  on unauthenticated API access. Until your app is approved, Reddit tools
-  won't return data.
+- **Reddit** — via [Apify](https://apify.com)'s `trudax/reddit-scraper-lite`
+  actor. Reddit closed self-service OAuth app registration in late 2025
+  (every new app now needs manual approval through a support ticket) and
+  blocks unauthenticated scraping outright, even with a real browser
+  User-Agent (verified Sep 2026 — returns a login-wall page, not data). Sign
+  up at Apify with no card for $5/month in free platform credits, get a
+  token from Settings > Integrations, set it as `REDDIT_API_KEY`.
 - **YouTube** — genuinely free, 10,000 quota units/day. Enable "YouTube Data
   API v3" in a Google Cloud project and create an API key:
   https://console.cloud.google.com/apis/library/youtube.googleapis.com
@@ -114,9 +112,9 @@ calling this occasionally; not for anything latency-sensitive.
 
 ## Notes / limitations
 
-- Reddit's public `.json` fallback and TwitterAPI.io are third-party paths
-  with their own rate limits and terms — fine for personal research, treat
-  accordingly for anything commercial.
+- Reddit and TwitterAPI.io/Apify are third-party paths with their own rate
+  limits and terms — fine for personal research, treat accordingly for
+  anything commercial.
 - `twitter_get_replies` uses `conversation_id:<tweet_id> filter:replies` under
   the hood, matching X's own advanced-search syntax.
 - `youtube_get_transcript` uses the unofficial `youtube-transcript-api`

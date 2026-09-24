@@ -1,10 +1,3 @@
-"""Registers every MCP tool exposed by this server.
-
-Each tool is a thin wrapper: validate input with the schema, call the matching
-api controller, return raw JSON-able data. No summarization/analysis happens
-here on purpose -- that's left to the connected AI agent.
-"""
-
 from mcp.server.fastmcp import FastMCP
 
 from api import reddit_api, twitter_api, youtube_api
