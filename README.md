@@ -78,6 +78,12 @@ reading/understanding happens in the AI client you connect it to.
   since X's official API has no free read access). Sign up with just an
   email for ~$1 of free trial credit (~6,000 calls), then top up cents at a
   time (~$0.15–0.20 per 1,000 tweets) if you need more.
+- **Twitter/X fallback (optional)** — via [Apify](https://apify.com)'s
+  `apidojo/tweet-scraper` actor. If TwitterAPI.io fails (unset key, rate
+  limit, outage), `twitter_search_tweets`/`twitter_get_replies` automatically
+  retry through this. Sign up with no card for $5/month in free platform
+  credits (~30k tweets at ~$0.15/1,000), then get a token from Settings >
+  Integrations.
 
 ## Hosting (Render, free)
 
