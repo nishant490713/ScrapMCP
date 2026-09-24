@@ -17,3 +17,11 @@ class YoutubeGetCommentsParams(BaseModel):
         "relevance", description="How to order the returned top-level comments."
     )
     limit: int = Field(50, ge=1, le=200, description="Max number of top-level comments to return.")
+
+
+class YoutubeGetTranscriptParams(BaseModel):
+    video_id: str = Field(..., description="YouTube video id, e.g. 'dQw4w9WgXcQ' (from a URL or from youtube_search_videos).")
+    languages: list[str] = Field(
+        default_factory=lambda: ["en"],
+        description="Preferred transcript language codes in priority order, e.g. ['en', 'en-US']. Falls back automatically if none are available.",
+    )

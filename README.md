@@ -13,6 +13,7 @@ reading/understanding happens in the AI client you connect it to.
 - `tools.py` — registers each MCP tool, wiring schema -> api controller.
 - `api/` — one file per source, does the actual HTTP calls (`reddit_api.py`, `youtube_api.py`, `twitter_api.py`).
 - `schema/` — pydantic input schemas for each tool, one file per source.
+- `oauth_provider.py`, `login.py` — minimal single-user OAuth server (for hosted mode, see below).
 
 ## Tools
 
@@ -22,6 +23,7 @@ reading/understanding happens in the AI client you connect it to.
 | `reddit_get_comments` | Reddit | Fetch a post's comment thread |
 | `youtube_search_videos` | YouTube | Search videos by query |
 | `youtube_get_comments` | YouTube | Fetch a video's top-level comments |
+| `youtube_get_transcript` | YouTube | Fetch a video's transcript/captions |
 | `twitter_search_tweets` | X/Twitter | Search tweets by advanced-search query |
 | `twitter_get_replies` | X/Twitter | Fetch replies to a tweet |
 
@@ -111,3 +113,8 @@ calling this occasionally; not for anything latency-sensitive.
   accordingly for anything commercial.
 - `twitter_get_replies` uses `conversation_id:<tweet_id> filter:replies` under
   the hood, matching X's own advanced-search syntax.
+- `youtube_get_transcript` uses the unofficial `youtube-transcript-api`
+  library (no key needed) since the official API only allows downloading
+  captions for videos you own. Works for most videos with captions
+  (manual or auto-generated); can get IP-throttled by YouTube under heavy
+  sustained use, which is not a concern at personal-research volume.

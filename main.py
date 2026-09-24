@@ -18,7 +18,7 @@ if BASE_URL and MCP_SERVER_SECRET:
         auth_server_provider=oauth_provider,
         auth=AuthSettings(
             issuer_url=BASE_URL,
-            resource_server_url=BASE_URL,
+            resource_server_url=f"{BASE_URL.rstrip('/')}/mcp",
             client_registration_options=ClientRegistrationOptions(enabled=True),
             revocation_options=RevocationOptions(enabled=True),
             validate_token_resource=False,

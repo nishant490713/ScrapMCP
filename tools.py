@@ -10,7 +10,7 @@ from mcp.server.fastmcp import FastMCP
 from api import reddit_api, twitter_api, youtube_api
 from schema.reddit_schema import RedditGetCommentsParams, RedditSearchPostsParams
 from schema.twitter_schema import TwitterGetRepliesParams, TwitterSearchTweetsParams
-from schema.youtube_schema import YoutubeGetCommentsParams, YoutubeSearchVideosParams
+from schema.youtube_schema import YoutubeGetCommentsParams, YoutubeGetTranscriptParams, YoutubeSearchVideosParams
 
 
 def register_tools(mcp: FastMCP) -> None:
@@ -41,6 +41,13 @@ def register_tools(mcp: FastMCP) -> None:
     )
     async def youtube_get_comments(params: YoutubeGetCommentsParams) -> list[dict]:
         return await youtube_api.get_comments(params)
+
+    @mcp.tool(
+        name="youtube_get_transcript",
+        description="Fetch the transcript/captions for a YouTube video by video id. Returns the full transcript text plus timed snippets.",
+    )
+    async def youtube_get_transcript(params: YoutubeGetTranscriptParams) -> dict:
+        return await youtube_api.get_transcript(params)
 
     @mcp.tool(
         name="twitter_search_tweets",

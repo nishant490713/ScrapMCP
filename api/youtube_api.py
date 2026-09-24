@@ -4,12 +4,14 @@ Uses the free YouTube Data API v3 (10,000 quota units/day per project).
 Requires YOUTUBE_API_KEY.
 """
 
+import asyncio
 from typing import Any
 
 import httpx
+from youtube_transcript_api import CouldNotRetrieveTranscript, YouTubeTranscriptApi
 
 from env import YOUTUBE_API_KEY
-from schema.youtube_schema import YoutubeGetCommentsParams, YoutubeSearchVideosParams
+from schema.youtube_schema import YoutubeGetCommentsParams, YoutubeGetTranscriptParams, YoutubeSearchVideosParams
 
 BASE_URL = "https://www.googleapis.com/youtube/v3"
 
@@ -92,3 +94,22 @@ async def get_comments(params: YoutubeGetCommentsParams) -> list[dict[str, Any]]
                 break
 
     return comments[: params.limit]
+
+
+async def get_transcript(params: YoutubeGetTranscriptParams) -> dict[str, Any]:
+    def fetch():
+        try:
+            return YouTubeTranscriptApi().fetch(params.video_id, languages=params.languages)
+        except CouldNotRetrieveTranscript as e:
+            raise RuntimeError(f"No transcript available for video {params.video_id}: {e}") from e
+
+    transcript = await asyncio.to_thread(fetch)
+
+    return {
+        "video_id": transcript.video_id,
+        "language": transcript.language,
+        "language_code": transcript.language_code,
+        "is_generated": transcript.is_generated,
+        "text": " ".join(snippet.text for snippet in transcript),
+        "snippets": [{"text": s.text, "start": s.start, "duration": s.duration} for s in transcript],
+    }
