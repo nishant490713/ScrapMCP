@@ -19,6 +19,6 @@ class RedditSearchPostsParams(BaseModel):
 
 class RedditGetCommentsParams(BaseModel):
     post_id: str = Field(
-        ..., description="Reddit post id (e.g. '1abcde') or a full post URL/permalink returned by reddit_search_posts."
+        ..., description="Full Reddit post URL/permalink, as returned in 'permalink' by reddit_search_posts."
     )
     limit: int = Field(50, ge=1, le=200, description="Max number of comments to return.")

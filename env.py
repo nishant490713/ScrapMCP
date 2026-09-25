@@ -7,6 +7,7 @@ load_dotenv()
 REDDIT_API_KEY = os.environ.get("REDDIT_API_KEY")
 
 YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY")
+YOUTUBE_TRANSCRIPT_API_KEY = os.environ.get("YOUTUBE_TRANSCRIPT_API_KEY")
 
 TWITTERAPI_IO_KEY = os.environ.get("TWITTERAPI_IO_KEY")
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN")

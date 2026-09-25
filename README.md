@@ -72,6 +72,12 @@ reading/understanding happens in the AI client you connect it to.
 - **YouTube** — genuinely free, 10,000 quota units/day. Enable "YouTube Data
   API v3" in a Google Cloud project and create an API key:
   https://console.cloud.google.com/apis/library/youtube.googleapis.com
+- **YouTube transcripts** — via [Apify](https://apify.com)'s
+  `pintostudio/youtube-transcript-scraper` actor. The official API only
+  allows caption downloads for videos you own, and unofficial scraping
+  libraries get IP-blocked when run from a hosted/cloud server (verified Sep
+  2026). Sign up at Apify with no card, get a token from Settings >
+  Integrations, set it as `YOUTUBE_TRANSCRIPT_API_KEY`.
 - **Twitter/X** — via [twitterapi.io](https://twitterapi.io) (third-party,
   since X's official API has no free read access). Sign up with just an
   email for ~$1 of free trial credit (~6,000 calls), then top up cents at a
@@ -117,8 +123,5 @@ calling this occasionally; not for anything latency-sensitive.
   anything commercial.
 - `twitter_get_replies` uses `conversation_id:<tweet_id> filter:replies` under
   the hood, matching X's own advanced-search syntax.
-- `youtube_get_transcript` uses the unofficial `youtube-transcript-api`
-  library (no key needed) since the official API only allows downloading
-  captions for videos you own. Works for most videos with captions
-  (manual or auto-generated); can get IP-throttled by YouTube under heavy
-  sustained use, which is not a concern at personal-research volume.
+- `reddit_get_comments` requires the full post URL/permalink (as returned by
+  `reddit_search_posts`), not a bare post id.

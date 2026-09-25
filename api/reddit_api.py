@@ -1,4 +1,3 @@
-import re
 from typing import Any
 
 import httpx
@@ -17,45 +16,39 @@ def _require_api_key() -> str:
 
 async def _run_actor(actor_input: dict[str, Any]) -> list[dict[str, Any]]:
     api_key = _require_api_key()
-    async with httpx.AsyncClient(timeout=120.0) as client:
+    async with httpx.AsyncClient(timeout=300.0) as client:
         resp = await client.post(
             APIFY_RUN_URL,
-            params={"token": api_key, "timeout": 100},
+            params={"token": api_key, "timeout": 280},
             json=actor_input,
         )
         resp.raise_for_status()
         return resp.json()
 
 
-def _extract_post_id(post_id_or_url: str) -> str:
-    match = re.search(r"/comments/([a-z0-9]+)", post_id_or_url)
-    if match:
-        return match.group(1)
-    return post_id_or_url.strip("/")
-
-
 def _normalize_post(item: dict[str, Any]) -> dict[str, Any]:
     return {
-        "id": item.get("id") or item.get("postId"),
+        "id": item.get("parsedId") or item.get("id"),
         "title": item.get("title"),
-        "selftext": (item.get("body") or item.get("text") or item.get("selftext") or "")[:1500],
-        "subreddit": item.get("communityName") or item.get("subreddit"),
-        "author": item.get("username") or item.get("author"),
-        "score": item.get("upVotes") or item.get("score"),
-        "num_comments": item.get("numberOfComments") or item.get("numComments"),
-        "created_utc": item.get("createdAt") or item.get("created_utc"),
-        "permalink": item.get("url") or item.get("permalink"),
-        "url": item.get("link") or item.get("url"),
+        "selftext": (item.get("body") or "")[:1500],
+        "subreddit": item.get("parsedCommunityName") or item.get("communityName"),
+        "author": item.get("username"),
+        "score": item.get("upVotes"),
+        "num_comments": item.get("numberOfComments"),
+        "created_at": item.get("createdAt"),
+        "permalink": item.get("url"),
+        "external_url": item.get("link"),
     }
 
 
 def _normalize_comment(item: dict[str, Any]) -> dict[str, Any]:
     return {
-        "id": item.get("id") or item.get("commentId"),
-        "author": item.get("username") or item.get("author"),
-        "body": item.get("body") or item.get("text"),
-        "score": item.get("upVotes") or item.get("score"),
-        "created_utc": item.get("createdAt") or item.get("created_utc"),
+        "id": item.get("parsedId") or item.get("id"),
+        "author": item.get("username"),
+        "body": item.get("body"),
+        "score": item.get("upVotes"),
+        "created_at": item.get("createdAt"),
+        "depth": item.get("depth"),
     }
 
 
@@ -81,11 +74,13 @@ async def search_posts(params: RedditSearchPostsParams) -> list[dict[str, Any]]:
 
 
 async def get_comments(params: RedditGetCommentsParams) -> list[dict[str, Any]]:
-    post_id = _extract_post_id(params.post_id)
-    url = params.post_id if params.post_id.startswith("http") else f"https://www.reddit.com/comments/{post_id}"
+    if not params.post_id.startswith("http"):
+        raise RuntimeError(
+            "post_id must be the full post URL/permalink (as returned in 'permalink' by reddit_search_posts), not a bare id."
+        )
 
     actor_input = {
-        "startUrls": [{"url": url}],
+        "startUrls": [{"url": params.post_id}],
         "skipComments": False,
         "maxComments": params.limit,
         "maxItems": params.limit + 1,

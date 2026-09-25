@@ -1,13 +1,12 @@
-import asyncio
 from typing import Any
 
 import httpx
-from youtube_transcript_api import CouldNotRetrieveTranscript, YouTubeTranscriptApi
 
-from env import YOUTUBE_API_KEY
+from env import YOUTUBE_API_KEY, YOUTUBE_TRANSCRIPT_API_KEY
 from schema.youtube_schema import YoutubeGetCommentsParams, YoutubeGetTranscriptParams, YoutubeSearchVideosParams
 
 BASE_URL = "https://www.googleapis.com/youtube/v3"
+TRANSCRIPT_ACTOR_URL = "https://api.apify.com/v2/acts/pintostudio~youtube-transcript-scraper/run-sync-get-dataset-items"
 
 
 def _require_api_key() -> str:
@@ -91,19 +90,34 @@ async def get_comments(params: YoutubeGetCommentsParams) -> list[dict[str, Any]]
 
 
 async def get_transcript(params: YoutubeGetTranscriptParams) -> dict[str, Any]:
-    def fetch():
-        try:
-            return YouTubeTranscriptApi().fetch(params.video_id, languages=params.languages)
-        except CouldNotRetrieveTranscript as e:
-            raise RuntimeError(f"No transcript available for video {params.video_id}: {e}") from e
+    if not YOUTUBE_TRANSCRIPT_API_KEY:
+        raise RuntimeError(
+            "YOUTUBE_TRANSCRIPT_API_KEY is not set. It's an Apify token -- sign up at https://apify.com and set it as an env var."
+        )
 
-    transcript = await asyncio.to_thread(fetch)
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        resp = await client.post(
+            TRANSCRIPT_ACTOR_URL,
+            params={"token": YOUTUBE_TRANSCRIPT_API_KEY, "timeout": 100},
+            json={
+                "videoUrl": f"https://www.youtube.com/watch?v={params.video_id}",
+                "targetLanguage": params.languages[0] if params.languages else "en",
+            },
+        )
+        resp.raise_for_status()
+        items = resp.json()
+
+    if not items or items[0].get("error"):
+        raise RuntimeError(f"No transcript available for video {params.video_id}.")
+
+    item = items[0]
+    segments = item.get("data") or item.get("transcript") or item.get("segments") or []
 
     return {
-        "video_id": transcript.video_id,
-        "language": transcript.language,
-        "language_code": transcript.language_code,
-        "is_generated": transcript.is_generated,
-        "text": " ".join(snippet.text for snippet in transcript),
-        "snippets": [{"text": s.text, "start": s.start, "duration": s.duration} for s in transcript],
+        "video_id": params.video_id,
+        "text": " ".join(s.get("text", "") for s in segments) if segments else item.get("text") or item.get("fullText"),
+        "snippets": [
+            {"text": s.get("text"), "start": s.get("offset") or s.get("start"), "duration": s.get("duration")}
+            for s in segments
+        ],
     }
